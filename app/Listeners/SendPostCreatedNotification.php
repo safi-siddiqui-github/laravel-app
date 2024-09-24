@@ -21,6 +21,6 @@ class SendPostCreatedNotification
      */
     public function handle(PostCreatedEvent $event): void
     {
-        info('Post is created by title: ' . $event->post->title);
+        // info('Post is created by title: ' . $event->post->title);
     }
 }
