@@ -11,14 +11,37 @@
 </head>
 
 <body>
-    <nav class="p-5">
-        <a href="/" class="{{request()->is('/') ? 'text-blue-500' : ''}}">Home</a>
-        <a href="/about" class="{{request()->is('about') ? 'text-blue-500' : ''}}">About</a>
-        <a href="/jobs" class="{{request()->is('jobs') ? 'text-blue-500' : ''}}">Jobs</a>
-        <a href="/posts" class="{{request()->is('posts') ? 'text-blue-500' : ''}}">posts</a>
-    </nav>
+    <header class="flex flex-col sm:flex-row p-5 justify-between items-center shadow">
 
-    {{$slot}}
+        <nav class="flex">
+            <a href="{{route('home.index')}}" class="text-lg">Laravel App</a>
+        </nav>
+
+        <nav class="flex gap-2 ">
+            <a href="{{route('post.index')}}" class="{{request()->routeIs('post.index') ? 'font-medium' : ''}}">Posts</a>
+        </nav>
+
+        <nav class="flex gap-2 text-sm">
+            @auth
+            <p class="">Welcome {{auth()->user()->name}} !</p>
+
+            <form action="{{route('auth.logout_post')}}" method="post">
+                @csrf
+                <button type="submit" class="hover:underline text-neutral-500">Logout</button>
+            </form>
+            @endauth
+            @guest
+            <a href="{{route('auth.login')}}" class="border rounded py-1 px-2 hover:border-black">Login</a>
+            <a href="{{route('auth.register')}}" class="border rounded py-1 px-2 hover:border-black">Register</a>
+            @endguest
+        </nav>
+
+    </header>
+
+    <main class="">
+        {{$slot}}
+    </main>
+
     @livewireScripts
 </body>
 

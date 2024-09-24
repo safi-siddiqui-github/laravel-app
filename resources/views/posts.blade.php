@@ -24,6 +24,5 @@
 
         {{$posts->links()}}
     </div>
-    
 
 </x-layout>
