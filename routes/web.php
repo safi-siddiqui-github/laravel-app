@@ -2,9 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
-use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Support\Facades\Route;
 
 Route::name('home.')->controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('index');
