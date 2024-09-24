@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostCreatedEvent;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -23,11 +24,13 @@ class PostController extends Controller
             'description' => 'string|required',
         ]);
 
-        $post_new = new Post();
-        $post_new->user_id = 1;
-        $post_new->title = $request->input('title');
-        $post_new->description = $request->input('description');
-        $post_new->save();
+        $post = new Post();
+        $post->user_id = 1;
+        $post->title = $request->input('title');
+        $post->description = $request->input('description');
+        $post->save();
+
+        PostCreatedEvent::dispatch($post);
 
         return to_route('post.index');
     }
