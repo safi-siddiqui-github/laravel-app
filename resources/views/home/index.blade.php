@@ -18,6 +18,7 @@
                 <p>Events -&/ Listeners</p>
                 <p>Broadcast -&/ Channel</p>
                 <p>Cache -&/ Flexible</p>
+                <p>Collections / Macros</p>
             </div>
 
         </div>
