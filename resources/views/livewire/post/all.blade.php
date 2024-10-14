@@ -2,18 +2,25 @@
 
 use App\Models\Post;
 
-use function Livewire\Volt\{computed};
+use function Livewire\Volt\{computed, state};
 
 $posts = computed(function () {
     return Post::latest()->paginate(4);
 });
 
+state([
+    'count' => cache()->flexible('count', [5, 10], function () {
+        return Post::count();
+    }),
+]);
+
+//wire:poll.6s
 ?>
 
 <div class="flex flex-col gap-5">
 
     <div class="flex justify-between items-center">
-        <h2 class="text-xl">All Posts</h2>
+        <h2 class="text-xl">All Posts ({{$this->count}})</h2>
         <a href="{{route('home.post')}}" class="text-sm underline">My Posts</a>
     </div>
 

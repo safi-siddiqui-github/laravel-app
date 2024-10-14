@@ -17,6 +17,7 @@
                 <p>Password Resets</p>
                 <p>Events -&/ Listeners</p>
                 <p>Broadcast -&/ Channel</p>
+                <p>Cache -&/ Flexible</p>
             </div>
 
         </div>
