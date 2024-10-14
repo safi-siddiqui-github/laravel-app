@@ -9,6 +9,9 @@
 </head>
 
 <body>
+
+    <x-message />
+
     <main class="">
         {{$slot}}
     </main>

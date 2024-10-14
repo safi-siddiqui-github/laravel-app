@@ -1,24 +1,41 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PostController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
-Route::name('home.')->controller(HomeController::class)->group(function () {
-    Route::get('/', 'index')->name('index');
+Route::name('auth.')->prefix('auth')->middleware('guest')->group(function () {
+    Route::view('login', 'auth.login')->name('login');
+    Route::view('register', 'auth.register')->name('register');
 });
 
-Route::name('post.')->controller(PostController::class)->middleware('auth')->group(function () {
-    Route::get('/posts', 'index')->name('index');
-    Route::post('/posts', 'store')->name('store');
-    Route::delete('/posts/{id}', 'delete')->name('delete');
+Route::name('home.')->group(function () {
+    Route::view('/', 'home.index')->name('index');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::view('posts', 'home.post')->name('post');
+    });
 });
 
-Route::name('auth.')->prefix('auth')->controller(AuthController::class)->group(function () {
-    Route::get('/login', 'login')->name('login')->middleware('guest');
-    Route::post('/login', 'login_post')->name('login_post')->middleware('guest');
-    Route::get('/register', 'register')->name('register')->middleware('guest');
-    Route::post('/register', 'register_post')->name('register_post')->middleware('guest');
-    Route::post('/logout', 'logout_post')->name('logout_post')->middleware('auth');
+Route::prefix('email/verify')->name('verification.')->middleware('auth')->group(function () {
+
+    Route::get('/', function () {
+        session()->flash('info', 'Verify you email !');
+        return to_route('home.index');
+    })->name('notice');
+
+    Route::get('/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        session()->flash('status', 'Email Verified');
+        return to_route('home.index');
+    })->name('verify')->middleware('signed');
+});
+
+Route::prefix('password')->name('password.')->middleware('guest')->group(function () {
+
+    Route::view('/forgot', 'auth.forgot-password')->name('request');
+
+    Route::get('/reset/{token}', function (string $token) {
+        return view('auth.reset-password', ['token' => $token]);
+    })->name('reset');
+    
 });
