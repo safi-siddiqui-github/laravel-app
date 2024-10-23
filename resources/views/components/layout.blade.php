@@ -18,7 +18,13 @@
         <nav class="flex gap-2 text-sm items-center">
             @auth
             @if(auth()->user()->avatar)
+
+            @if(str()->contains(auth()->user()->avatar, 'https://'))
+            <img src="{{auth()->user()->avatar}}" alt="user image" class="w-10 h-10 object-cover rounded-full">
+            @else
             <img src="{{asset('avatars/'.auth()->user()->avatar)}}" alt="user image" class="w-10 h-10 object-cover rounded-full">
+            @endif
+
             @else
             <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-semibold text-xl">
                 {{str()->charAt(auth()->user()->name, 0)}}

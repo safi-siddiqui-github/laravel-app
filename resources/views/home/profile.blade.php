@@ -1,7 +1,7 @@
 <x-layout>
     <div class="flex flex-col gap-5 p-5">
 
-        <h2 class="text-lg">Profile</h2>
+        <h2 class="text-lg">{{__('page.title')}}</h2>
 
         <div class="flex flex-col gap-2">
             <div class="flex gap-2 items-center">
@@ -20,6 +20,10 @@
             </div>
 
         </div>
+
+        <livewire:profile.locale />
+
+        <livewire:profile.random-avatar />
 
         <livewire:profile.avatar />
 

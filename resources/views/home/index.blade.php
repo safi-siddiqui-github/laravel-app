@@ -22,6 +22,8 @@
                 <p>Context Logs -&/ Jobs</p>
                 <p>Contracts -&/ Facades</p>
                 <p>File Storage -&/ Helpers</p>
+                <p>HTTP Client -&/ Guzzle</p>
+                <p>Localization -&/ Session</p>
             </div>
 
         </div>

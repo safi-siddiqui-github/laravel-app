@@ -42,7 +42,9 @@ $remove = function () {
 
 ?>
 
-<div class="flex flex-col gap-5">
+<div class="flex flex-col gap-2">
+
+    <p class="text-lg font-medium">Upload avatar</p>
 
     <form wire:submit="change" class="flex flex-col max-w-96 gap-2 items-start">
         <input type="file" wire:model="avatar" class="border rounded p-0.5">
@@ -53,6 +55,6 @@ $remove = function () {
         @endif
     </form>
 
-    <button wire:click="remove" class="bg-red-500 px-2 py-1 w-fit text-sm text-white rounded">Remove my avatar</button>
+    <button wire:click="remove" class="bg-red-500 px-2 py-1 w-fit text-sm text-white rounded">Remove my avatar/image</button>
 
 </div>
