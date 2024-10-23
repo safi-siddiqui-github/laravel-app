@@ -9,15 +9,22 @@
 </head>
 
 <body>
-    <header class="flex flex-row p-5 justify-between items-center shadow">
+    <header class="flex flex-row px-5 py-3 justify-between items-center shadow">
 
         <nav class="flex">
             <a href="{{route('home.index')}}" class="text-lg">Laravel App</a>
         </nav>
 
-        <nav class="flex gap-2 text-sm">
+        <nav class="flex gap-2 text-sm items-center">
             @auth
-            <p class="">Welcome {{auth()->user()->name}} !</p>
+            @if(auth()->user()->avatar)
+            <img src="{{asset('avatars/'.auth()->user()->avatar)}}" alt="user image" class="w-10 h-10 object-cover rounded-full">
+            @else
+            <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-semibold text-xl">
+                {{str()->charAt(auth()->user()->name, 0)}}
+            </div>
+            @endif
+            <a href="{{route('home.profile')}}" class="underline">{{auth()->user()->name}} !</a>
             <livewire:auth.logout />
             @endauth
             @guest

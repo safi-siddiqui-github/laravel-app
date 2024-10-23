@@ -18,7 +18,10 @@
                 <p>Events -&/ Listeners</p>
                 <p>Broadcast -&/ Channel</p>
                 <p>Cache -&/ Flexible</p>
-                <p>Collections / Macros</p>
+                <p>Collections -&/ Macros</p>
+                <p>Context Logs -&/ Jobs</p>
+                <p>Contracts -&/ Facades</p>
+                <p>File Storage -&/ Helpers</p>
             </div>
 
         </div>

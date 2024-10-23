@@ -13,6 +13,7 @@ Route::name('home.')->group(function () {
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::view('posts', 'home.post')->name('post');
+        Route::view('profile', 'home.profile')->name('profile');
     });
 });
 
