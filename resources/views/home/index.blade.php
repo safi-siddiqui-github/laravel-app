@@ -26,6 +26,7 @@
                 <p>Localization -&/ Session</p>
                 <p>Notifications -&/ Slack</p>
                 <p>Queues -&/ Jobs</p>
+                <p>Rate Limiting -&/ Task Scheduling</p>
             </div>
 
         </div>
