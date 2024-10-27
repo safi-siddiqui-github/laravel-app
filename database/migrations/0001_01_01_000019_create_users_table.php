@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('avatar')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('prefers_sms')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

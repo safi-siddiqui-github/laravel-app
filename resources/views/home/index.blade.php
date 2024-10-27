@@ -24,6 +24,7 @@
                 <p>File Storage -&/ Helpers</p>
                 <p>HTTP Client -&/ Guzzle</p>
                 <p>Localization -&/ Session</p>
+                <p>Notifications -&/ Slack</p>
             </div>
 
         </div>

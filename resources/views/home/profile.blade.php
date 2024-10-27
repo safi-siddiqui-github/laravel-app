@@ -26,6 +26,8 @@
         <livewire:profile.random-avatar />
 
         <livewire:profile.avatar />
+        
+        <livewire:profile.notification />
 
     </div>
 

@@ -2,6 +2,8 @@
 
 use App\Events\PostCreatedEvent;
 use App\Models\Post;
+use App\Notifications\Post\PostCreated;
+use Illuminate\Support\Facades\Auth;
 
 use function Livewire\Volt\{computed, state};
 
@@ -18,6 +20,8 @@ $store = function () {
     $post->save();
 
     // PostCreatedEvent::dispatch($post);
+
+    Auth::user()->notify(new PostCreated($post));
 
     $this->title = '';
 };
@@ -78,6 +82,17 @@ $delete = function (string $id) {
                 });
             // php artisan queue:work
             // php artisan reverb:start
+        })
+        */
+        /*
+        document.addEventListener('alpine:init', () => {
+
+            let userId = {{auth()->id()}};
+
+            Echo.private('App.Models.User.' + userId)
+                .notification((notification) => {
+                    console.log(notification.title);
+                });
         })
         */
     </script>
