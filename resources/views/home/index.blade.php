@@ -25,6 +25,7 @@
                 <p>HTTP Client -&/ Guzzle</p>
                 <p>Localization -&/ Session</p>
                 <p>Notifications -&/ Slack</p>
+                <p>Queues -&/ Jobs</p>
             </div>
 
         </div>

@@ -21,7 +21,9 @@ $store = function () {
 
     // PostCreatedEvent::dispatch($post);
 
-    Auth::user()->notify(new PostCreated($post));
+    // Auth::user()->notify(new PostCreated($post));
+
+    
 
     $this->title = '';
 };
