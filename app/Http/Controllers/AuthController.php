@@ -179,7 +179,12 @@ class AuthController extends Controller
 
         Auth::login($user, $remember = true);
         request()->session()->regenerate();
-        return redirect()->route('home');
+
+        if ($newUser) {
+            return redirect()->route('verification.notice');
+        } else {
+            return redirect()->route('home');
+        }
     }
 
     public function passwordForgot()
