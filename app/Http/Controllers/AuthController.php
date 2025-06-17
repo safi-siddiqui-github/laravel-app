@@ -133,7 +133,7 @@ class AuthController extends Controller
     public function googleCallback(Request $request)
     {
         $socialUser = Socialite::driver('google')->user();
-        return $this->socialLogin($socialUser);
+        return $this->socialLogin($socialUser, 'google');
     }
 
     public function githubRedirect()
@@ -146,10 +146,10 @@ class AuthController extends Controller
     public function githubCallback(Request $request)
     {
         $socialUser = Socialite::driver('github')->user();
-        return $this->socialLogin($socialUser);
+        return $this->socialLogin($socialUser, 'github');
     }
 
-    public function socialLogin($socialUser)
+    public function socialLogin($socialUser, $provider)
     {
         $newUser = false;
 
@@ -168,8 +168,15 @@ class AuthController extends Controller
 
         $user->avatar = $socialUser->getAvatar();
         $user->name = $socialUser->getName();
-        $user->google_id = $socialUser->getId();
-        $user->google_token = $socialUser->token;
+
+        if($provider=='google'){
+            $user->google_id = $socialUser->getId();
+            $user->google_token = $socialUser->token;
+        } else if($provider=='github') {
+            $user->github_id = $socialUser->getId();
+            $user->github_token = $socialUser->token;
+        }
+
         $user->save();
 
         if ($newUser) {
