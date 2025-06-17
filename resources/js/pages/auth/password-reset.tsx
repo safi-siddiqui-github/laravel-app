@@ -1,23 +1,24 @@
-import SocialLogin from '@/components/general/social-login';
 import AuthLayout from '@/components/layout/auth-layout';
 import ButtonComponent from '@/components/ui/button-component';
 import ErrorTextComponent from '@/components/ui/error-text-component';
 import InputComponent from '@/components/ui/input-component';
 import LabelComponent from '@/components/ui/label-component';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useCallback } from 'react';
 
 type Form = {
-    name: string;
+    token: string;
     email: string;
     password: string;
     password_confirmation: string;
 };
 
 export default function Page() {
-    const { setData, reset, post, errors, clearErrors, processing } = useForm<Required<Form>>({
-        name: '',
-        email: '',
+    const { email, token } = usePage<Required<{ token: string; email: string }>>().props;
+
+    const { setData, data, reset, post, errors, clearErrors, processing } = useForm<Required<Form>>({
+        token: token,
+        email: email,
         password: '',
         password_confirmation: '',
     });
@@ -25,8 +26,9 @@ export default function Page() {
     const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
         (e) => {
             e.preventDefault();
-            post(route('register.form'), {});
+            post(route('password.resetForm'), {});
             reset('password');
+            reset('password_confirmation');
             clearErrors();
         },
         [post, reset, clearErrors],
@@ -34,44 +36,22 @@ export default function Page() {
 
     return (
         <>
-            <Head title="Register"></Head>
+            <Head title="Update Password"></Head>
             <AuthLayout>
                 <form
                     onSubmit={handleSubmit}
                     className="flex w-full max-w-sm flex-col gap-6 p-4"
                 >
                     <div className="flex flex-col items-start">
-                        <h2 className="text-xl font-medium">Register</h2>
-                        <Link
-                            href={route('login.page')}
-                            className="py-1 text-sm"
-                        >
-                            Already have an Account?
-                        </Link>
-                    </div>
-
-                    <SocialLogin />
-
-                    <div className="flex flex-col gap-1">
-                        <LabelComponent htmlFor="name">Name</LabelComponent>
-                        <InputComponent
-                            id="name"
-                            placeholder="fullname"
-                            onChange={(e) => {
-                                setData('name', e.currentTarget.value);
-                            }}
-                        />
-                        {errors.name && <ErrorTextComponent children={errors.name} />}
+                        <h2 className="text-xl font-medium">Update Password</h2>
+                        <p className="py-1 text-sm">Make a new strong secure password</p>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <LabelComponent htmlFor="email">Email</LabelComponent>
                         <InputComponent
-                            id="email"
-                            placeholder="emal@example.com"
-                            onChange={(e) => {
-                                setData('email', e.currentTarget.value);
-                            }}
+                            defaultValue={data.email}
+                            disabled={true}
                         />
                         {errors.email && <ErrorTextComponent children={errors.email} />}
                     </div>
@@ -104,7 +84,7 @@ export default function Page() {
                         type="submit"
                         disabled={processing}
                     >
-                        Register
+                        Update Password
                     </ButtonComponent>
                 </form>
             </AuthLayout>

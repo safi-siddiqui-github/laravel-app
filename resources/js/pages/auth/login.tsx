@@ -1,110 +1,109 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import SocialLogin from '@/components/general/social-login';
+import AuthLayout from '@/components/layout/auth-layout';
+import ButtonComponent from '@/components/ui/button-component';
+import ErrorTextComponent from '@/components/ui/error-text-component';
+import InputComponent from '@/components/ui/input-component';
+import LabelComponent from '@/components/ui/label-component';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEventHandler, useCallback } from 'react';
 
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
-
-type LoginForm = {
+type Form = {
     email: string;
     password: string;
     remember: boolean;
 };
 
-interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
-}
-
-export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
+export default function Page() {
+    const { setData, data, reset, post, errors, clearErrors, processing } = useForm<Required<Form>>({
         email: '',
         password: '',
-        remember: false,
+        remember: true,
     });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
-    };
+    const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(
+        (e) => {
+            e.preventDefault();
+            post(route('login.form'), {});
+            reset('password');
+            clearErrors();
+        },
+        [post, reset, clearErrors],
+    );
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
-            <Head title="Log in" />
+        <>
+            <Head title="Login"></Head>
+            <AuthLayout>
+                <form
+                    onSubmit={handleSubmit}
+                    className="flex w-full max-w-sm flex-col gap-6 p-4"
+                >
+                    <div className="flex flex-col items-start">
+                        <h2 className="text-xl font-medium">Login</h2>
+                        <Link
+                            href={route('register.page')}
+                            className="py-1 text-sm"
+                        >
+                            Create your new Account?
+                        </Link>
+                    </div>
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
+                    <SocialLogin />
+
+                    <div className="flex flex-col gap-1">
+                        <LabelComponent htmlFor="email">Email</LabelComponent>
+                        <InputComponent
                             id="email"
-                            type="email"
-                            required
-                            autoFocus
-                            tabIndex={1}
-                            autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            placeholder="emal@example.com"
+                            onChange={(e) => {
+                                setData('email', e.currentTarget.value);
+                            }}
                         />
-                        <InputError message={errors.email} />
+                        {errors.email && <ErrorTextComponent children={errors.email} />}
                     </div>
 
-                    <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
-                            )}
+                    <div className="flex flex-col gap-1">
+                        <div className="flex flex-wrap justify-between">
+                            <LabelComponent htmlFor="password">Password</LabelComponent>
+                            <Link
+                                href={route('password.request')}
+                                className="text-sm"
+                            >
+                                Forgot Password?
+                            </Link>
                         </div>
-                        <Input
+
+                        <InputComponent
                             id="password"
-                            type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
+                            placeholder="**********"
+                            onChange={(e) => {
+                                setData('password', e.currentTarget.value);
+                            }}
                         />
-                        <InputError message={errors.password} />
+                        {errors.password && <ErrorTextComponent children={errors.password} />}
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox
+                    <div className="flex flex-row items-center gap-2">
+                        <InputComponent
                             id="remember"
-                            name="remember"
-                            checked={data.remember}
-                            onClick={() => setData('remember', !data.remember)}
-                            tabIndex={3}
+                            type="checkbox"
+                            className="size-4"
+                            defaultChecked={data.remember}
+                            onChange={(e) => {
+                                setData('remember', e.currentTarget.checked);
+                            }}
                         />
-                        <Label htmlFor="remember">Remember me</Label>
+                        <LabelComponent htmlFor="remember">Remember me</LabelComponent>
                     </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
-                    </Button>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                    Don't have an account?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
-                        Sign up
-                    </TextLink>
-                </div>
-            </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
-        </AuthLayout>
+                    <ButtonComponent
+                        type="submit"
+                        disabled={processing}
+                    >
+                        Login
+                    </ButtonComponent>
+                </form>
+            </AuthLayout>
+        </>
     );
 }
