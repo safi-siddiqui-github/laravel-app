@@ -16,5 +16,10 @@ Route::controller(AuthController::class)->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', 'logout');
+
+        Route::prefix('email-verification')->group(function () {
+            Route::post('verify', 'verifyEmail');
+            Route::post('resend', 'resendVerificationEmail');
+        });
     });
 });
