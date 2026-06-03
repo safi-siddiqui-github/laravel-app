@@ -26,6 +26,9 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        \App\Models\User::truncate();
+        \App\Models\Otp::truncate();
+        
         $user = $this->userController->storeUsingEmailPassword();
         $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
 
