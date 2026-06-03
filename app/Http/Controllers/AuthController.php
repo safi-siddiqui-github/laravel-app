@@ -4,16 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Otp\OtpTypeEnum;
 use App\Http\Resources\Token\TokenResource;
-use App\Models\Otp;
-use App\Models\User;
 use App\Traits\ResponseTrait;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
-
 
 class AuthController extends Controller
 {
@@ -56,16 +50,6 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-
-        dd(
-            $request->path(),
-            $request->host(),
-            $request->url(),
-            $request->fullUrl(),
-            $request->httpHost(),
-            $request->schemeAndHttpHost(),
-        );
-
         $user = $this->userController->verifyUsingEmailPassword();
 
         $token = null;

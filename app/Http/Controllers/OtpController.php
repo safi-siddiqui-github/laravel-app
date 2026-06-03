@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\Otp\OtpTypeEnum;
 use App\Mail\Otp\OtpCodeMail;
 use App\Models\Otp;
-use App\Traits\ResponseTrait;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -14,8 +13,6 @@ use Illuminate\Support\Str;
 
 class OtpController extends Controller
 {
-    use ResponseTrait;
-
     public function store(): Otp
     {
         request()->validate([
