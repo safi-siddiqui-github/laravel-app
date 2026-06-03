@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OtpType;
+use App\Enums\Otp\OtpTypeEnum;
+use App\Http\Resources\Token\TokenResource;
 use App\Models\Otp;
 use App\Models\User;
 use App\Traits\ResponseTrait;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Jenssegers\Agent\Agent;
-use Throwable;
 use Illuminate\Support\Str;
 
 
@@ -21,131 +19,64 @@ class AuthController extends Controller
 {
     use ResponseTrait;
 
+    public PersonalAccessTokenController $personalAccessTokenController;
+    public UserController $userController;
     public OtpController $otpController;
 
     public function __construct()
     {
+        $this->personalAccessTokenController = new PersonalAccessTokenController();
+        $this->userController = new UserController();
         $this->otpController = new OtpController();
-    }
-
-    protected function createTokenName(User $user)
-    {
-        $agent = new Agent();
-
-        $device = $agent->device();
-        $platform = $agent->platform();
-        $browser = $agent->browser();
-
-        $tokenName = "$device - $platform - $browser";
-
-        $tokenExpiresAt = now()->addMonths(1);
-
-        $token = $user->createToken($tokenName, ['*'], $tokenExpiresAt);
-        // $token = $user->createToken($tokenName);
-
-        return [
-            'token' => $token->plainTextToken,
-            'expires_at' => $tokenExpiresAt,
-            'token_name' => $tokenName
-        ];
-    }
-
-    public function slugify(string $email): string
-    {
-        $username = Str::before($email, '@');
-        $usernameSlug = Str::slug($username);
-        $ulid = Str::ulid();
-        $combinedSlug = Str::slug("$usernameSlug-$ulid");
-
-        return $combinedSlug;
     }
 
     public function register(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
+        User::truncate();
+        Otp::truncate();
 
-        $user = new User();
-        $user->username = $this->slugify($validated['email']);
-        $user->email = $validated['email'];
-        $user->password = $validated['password'];
-        $user->save();
+        $user = $this->userController->storeUsingEmailPassword();
+        $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
 
-        if (!$user) {
-            throw ValidationException::withMessages([
-                'email' => "Registration failed",
-            ]);
-        }
-
-        $token = $this->createTokenName($user);
-        $tokenString = $token['token'];
-        $tokenExpiresAt = $token['expires_at'];
-        if (!$token || !$tokenString || !$tokenExpiresAt) {
-            throw ValidationException::withMessages([
-                'email' => "Registration failed",
-            ]);
-        }
-
-        $this->otpController->store($request->mergeIfMissing([
+        request()->mergeIfMissing([
             'user_id' => $user->id,
-            'type' => OtpType::EMAIL_VERIFY_OTP->value
-        ]));
+            'type' => OtpTypeEnum::EMAIL_VERIFY_OTP->value,
+        ]);
+        $this->otpController->store();
+
+        $tokenResource = new TokenResource(
+            token: $token
+        );
 
         return $this->apiResponse(
             message: 'User Registered',
             data: [
-                'user' => $user,
-                'token' => [
-                    'token' => $tokenString,
-                    'expires_at' => $tokenExpiresAt
-                ]
+                'user' => $user->toResource(),
+                'token' => $tokenResource
             ]
         );
     }
 
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email|max:255|exists:users',
-            'password' => 'required|string|min:8',
-        ]);
+        $user = $this->userController->verifyUsingEmailPassword();
 
-        $user = User::firstWhere('email', $validated['email']);
-
-        if (!$user) {
-            throw ValidationException::withMessages([
-                'email' => "Login failed",
-            ]);
+        $token = null;
+        if ($user->isEmailVerified()) {
+            $token = $this->personalAccessTokenController->storeAllowAll($user);
+        } else {
+            $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
         }
 
-        $check = Hash::check($validated['password'], $user->password);
-
-        if (!$check) {
-            throw ValidationException::withMessages([
-                'email' => "Login failed",
-            ]);
-        }
-
-        $token = $this->createTokenName($user);
-
-        $tokenString = $token['token'];
-        $tokenExpiresAt = $token['expires_at'];
-        if (!$token || !$tokenString || !$tokenExpiresAt) {
-            throw ValidationException::withMessages([
-                'email' => "Login failed",
-            ]);
-        }
+        $tokenResource = new TokenResource(
+            token: $token
+        );
 
         return $this->apiResponse(
-            message: 'User Logged In',
+            message: 'User Loggedin',
             data: [
-                'user' => $user,
-                'token' => [
-                    'token' => $tokenString,
-                    'expires_at' => $tokenExpiresAt
-                ],
+                'user' => $user->toResource(),
+                'token' => $tokenResource
             ]
         );
     }
@@ -173,19 +104,27 @@ class AuthController extends Controller
             ]);
         }
 
-        $this->otpController->verify($request->mergeIfMissing([
+        request()->mergeIfMissing([
             'user_id' => $user->id,
-            'type' => OtpType::EMAIL_VERIFY_OTP->value,
             'code' => $validated['code'],
-        ]));
+            'type' => OtpTypeEnum::EMAIL_VERIFY_OTP->value,
+        ]);
+        $this->otpController->verify();
 
         $user->markEmailAsVerified();
         new Verified($user);
 
+        $token = $this->personalAccessTokenController->storeAllowAll($user);
+
+        $tokenResource = new TokenResource(
+            token: $token
+        );
+
         return $this->apiResponse(
             message: 'Email Verified',
             data: [
-                'user' => $user,
+                'user' => $user->toResource(),
+                'token' => $tokenResource,
             ]
         );
     }
@@ -200,19 +139,23 @@ class AuthController extends Controller
             ]);
         }
 
-        $this->otpController->store($request->mergeIfMissing([
+        request()->mergeIfMissing([
             'user_id' => $user->id,
-            'type' => OtpType::EMAIL_VERIFY_OTP->value,
+            'type' => OtpTypeEnum::EMAIL_VERIFY_OTP->value,
             'email' => $user->email,
-        ]));
+        ]);
 
-        $this->otpController->expireAll($request->mergeIfMissing([
-            'user_id' => $user->id,
-            'type' => OtpType::EMAIL_VERIFY_OTP->value,
-        ]));
+        $otp = $this->otpController->store();
+
+        request()->mergeIfMissing([
+            'otp_id' => $otp->id,
+        ]);
+        $this->otpController->expireAll();
 
         return $this->apiResponse(
             message: 'Email Verification Resend',
         );
     }
+
+    
 }

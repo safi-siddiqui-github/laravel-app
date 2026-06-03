@@ -2,18 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OtpType;
+use App\Enums\Otp\OtpTypeEnum;
 use App\Mail\Otp\OtpCodeMail;
 use App\Models\Otp;
-use App\Models\User;
 use App\Traits\ResponseTrait;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -22,23 +16,24 @@ class OtpController extends Controller
 {
     use ResponseTrait;
 
-    public function store(Request $request)
+    public function store(): Otp
     {
-        $validated = $request->validate([
+        request()->validate([
             'user_id' => 'required|integer|exists:users,id',
-            'type' => ['required', Rule::enum(OtpType::class)],
+            'type' => ['required', Rule::enum(OtpTypeEnum::class)],
+            'email' => ['required', 'string', 'email', 'exists:users,email'],
         ]);
 
-        $otp = Otp::where('user_id', $validated['user_id'])
-            ->where('type', $validated['type'])
-            ->whereNull('used_at')
-            ->whereFuture('expires_at')
+        $user_id = request()->input('user_id');
+        $type = request()->input('type');
+        $email = request()->input('email');
+
+        $otp = Otp::where('user_id', $user_id)
+            ->where('type', $type)
+            // ->whereNull('used_at')
+            // ->whereFuture('expires_at')
             ->latest()
             ->first();
-
-        $expires_at = now()->addMinutes(5);
-        $code = Str::random(6);
-        $codeHash = Hash::make($code);
 
         if ($otp) {
             $cooldownPeriod = $otp->created_at->addMinutes(5);
@@ -51,14 +46,15 @@ class OtpController extends Controller
             }
         }
 
-        if (!$otp) {
-            $otp = new Otp();
-            $otp->user_id = $validated['user_id'];
-            $otp->expires_at = $expires_at;
-            $otp->code = $codeHash;
-            $otp->type = $validated['type'];
-            $otp->save();
-        }
+        $code = Str::random(6);
+        $codeHash = Hash::make($code);
+
+        $otp = new Otp();
+        $otp->user_id = $user_id;
+        $otp->expires_at = now()->addMinutes(5);
+        $otp->code = $codeHash;
+        $otp->type = $type;
+        $otp->save();
 
         if (!$otp) {
             throw ValidationException::withMessages([
@@ -66,28 +62,26 @@ class OtpController extends Controller
             ]);
         }
 
-        Otp::where('user_id', $validated['user_id'])
-            ->where('type', $validated['type'])
-            ->whereNull('used_at')
-            ->wherePast('expires_at')
-            ->whereNotIn('id', [$otp->id])
-            ->update([
-                'used_at' => now()
-            ]);
+        Mail::to($email)->send(new OtpCodeMail(code: $code));
 
-        Mail::to($request->input('email'))->send(new OtpCodeMail(code: $code));
+        return $otp;
     }
 
-    public function verify(Request $request)
+    public function verify(): Otp
     {
-        $validated = $request->validate([
+        request()->validate([
             'user_id' => 'required|integer|exists:users,id',
-            'type' => ['required', Rule::enum(OtpType::class)],
+            'type' => ['required', Rule::enum(OtpTypeEnum::class)],
             'code' => 'required|string',
         ]);
 
-        $otp = Otp::where('user_id', $validated['user_id'])
-            ->where('type', $validated['type'])
+
+        $user_id = request()->input('user_id');
+        $type = request()->input('type');
+        $code = request()->input('code');
+
+        $otp = Otp::where('user_id', $user_id)
+            ->where('type', $type)
             ->where('attempts', '<', 5)
             ->whereNull('used_at')
             ->whereFuture('expires_at')
@@ -100,10 +94,10 @@ class OtpController extends Controller
             ]);
         }
 
-        if (!Hash::check($validated['code'], $otp->code)) {
+        $otp->attempts = $otp->attempts + 1;
+        $otp->save();
 
-            $otp->attempts = $otp->attempts + 1;
-            $otp->save();
+        if (!Hash::check($code, $otp->code)) {
 
             throw ValidationException::withMessages([
                 'otp' => "Invalid Otp",
@@ -112,22 +106,30 @@ class OtpController extends Controller
 
         $otp->used_at = now();
         $otp->save();
+
+        return $otp;
     }
 
-    public function expireAll(Request $request)
+    public function expireAll()
     {
-        $validated = $request->validate([
+        request()->validate([
+            'otp_id' => 'sometimes|integer|exists:otps,id',
             'user_id' => 'required|integer|exists:users,id',
-            'type' => ['required', Rule::enum(OtpType::class)],
+            'type' => ['required', Rule::enum(OtpTypeEnum::class)],
         ]);
 
-        Otp::where('user_id', $validated['user_id'])
-            ->where('type', $validated['type'])
-            ->where('attempts', '<', 5)
+        $user_id = request()->input('user_id');
+        $type = request()->input('type');
+
+        Otp::where('user_id', $user_id)
+            ->where('type', $type)
+            ->whereNotIn('id', [request()->input('otp_id')])
+            // ->where('attempts', '<', 5)
+            // ->whereFuture('expires_at')
             ->whereNull('used_at')
-            ->whereFuture('expires_at')
             ->update([
-                'used_at' => now()
+                'used_at' => now(),
+                'expires_at' => now(),
             ]);
     }
 }

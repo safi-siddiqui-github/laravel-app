@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\OtpType;
+use App\Enums\Otp\OtpTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 
 class Otp extends Model
@@ -10,7 +10,7 @@ class Otp extends Model
     protected function casts(): array
     {
         return [
-            'type' => OtpType::class,
+            'type' => OtpTypeEnum::class,
             'expires_at' => 'datetime',
             'used_at' => 'datetime',
         ];

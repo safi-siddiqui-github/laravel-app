@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Enums;
+namespace App\Enums\Otp;
 
-enum OtpType: string
+enum OtpTypeEnum: string
 {
     case EMAIL_VERIFY_OTP = 'EMAIL_VERIFY_OTP';
     case PHONE_VERIFY_OTP = 'PHONE_VERIFY_OTP';
