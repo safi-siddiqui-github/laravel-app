@@ -32,9 +32,6 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        User::truncate();
-        Otp::truncate();
-
         $user = $this->userController->storeUsingEmailPassword();
         $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
 
@@ -59,6 +56,16 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+
+        dd(
+            $request->path(),
+            $request->host(),
+            $request->url(),
+            $request->fullUrl(),
+            $request->httpHost(),
+            $request->schemeAndHttpHost(),
+        );
+
         $user = $this->userController->verifyUsingEmailPassword();
 
         $token = null;
@@ -156,6 +163,4 @@ class AuthController extends Controller
             message: 'Email Verification Resend',
         );
     }
-
-    
 }
