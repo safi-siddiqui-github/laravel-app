@@ -26,9 +26,6 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        \App\Models\User::truncate();
-        \App\Models\Otp::truncate();
-        
         $user = $this->userController->storeUsingEmailPassword();
         $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
 
@@ -148,6 +145,31 @@ class AuthController extends Controller
 
         return $this->apiResponse(
             message: 'Email Verification Resend',
+        );
+    }
+
+    public function socialLogin(Request $request)
+    {
+        $user = $this->userController->upsertUsingSocialLogin();
+
+        $token = null;
+
+        if ($user->isEmailVerified()) {
+            $token =  $this->personalAccessTokenController->storeAllowAll($user);
+        } else {
+            $token =  $this->personalAccessTokenController->storeAllowEmailVerification($user);
+        }
+
+        $tokenResource = new TokenResource(
+            token: $token
+        );
+
+        return $this->apiResponse(
+            message: 'Social Login Success',
+            data: [
+                'user' => $user->toResource(),
+                'token' => $tokenResource,
+            ]
         );
     }
 }
