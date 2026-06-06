@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Otp\OtpTypeEnum;
-use App\Http\Resources\Token\TokenResource;
+use App\Http\Resources\PersonalAccessToken\PersonalAccessTokenResource;
 use App\Traits\ResponseTrait;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -35,7 +35,7 @@ class AuthController extends Controller
         ]);
         $this->otpController->store();
 
-        $tokenResource = new TokenResource(
+        $tokenResource = new PersonalAccessTokenResource(
             token: $token
         );
 
@@ -59,7 +59,7 @@ class AuthController extends Controller
             $token = $this->personalAccessTokenController->storeAllowEmailVerification($user);
         }
 
-        $tokenResource = new TokenResource(
+        $tokenResource = new PersonalAccessTokenResource(
             token: $token
         );
 
@@ -107,7 +107,7 @@ class AuthController extends Controller
 
         $token = $this->personalAccessTokenController->storeAllowAll($user);
 
-        $tokenResource = new TokenResource(
+        $tokenResource = new PersonalAccessTokenResource(
             token: $token
         );
 
@@ -160,7 +160,7 @@ class AuthController extends Controller
             $token =  $this->personalAccessTokenController->storeAllowEmailVerification($user);
         }
 
-        $tokenResource = new TokenResource(
+        $tokenResource = new PersonalAccessTokenResource(
             token: $token
         );
 

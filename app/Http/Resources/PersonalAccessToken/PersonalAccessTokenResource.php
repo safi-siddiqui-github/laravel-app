@@ -1,25 +1,23 @@
 <?php
 
-namespace App\Http\Resources\Token;
+namespace App\Http\Resources\PersonalAccessToken;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Laravel\Sanctum\NewAccessToken;
 
-class TokenResource extends JsonResource
+class PersonalAccessTokenResource extends JsonResource
 {
 
     public function __construct(
         public NewAccessToken $token,
     ) {}
 
-
     /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
-
     public function toArray(Request $request): array
     {
         // return parent::toArray($request);
