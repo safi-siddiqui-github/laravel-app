@@ -82,8 +82,8 @@ class UserController extends Controller
         request()->validate([
             'email' => 'required|email',
             'email_verified' => 'required|boolean',
-            'name' => 'required|string|min:5|max:100',
-            'avatar' => 'sometimes|string|min:5|max:100',
+            'name' => 'required|string|min:1|max:100',
+            'avatar' => 'sometimes|string|min:1|max:100',
             'google_id' => [
                 'sometimes',
                 'string',
