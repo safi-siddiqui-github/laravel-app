@@ -144,4 +144,31 @@ class UserController extends Controller
 
         return $user;
     }
+
+    public function verifyUsingEmail(): User
+    {
+        request()->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $email = request()->input('email');
+
+        $user = User::where('email', $email)->first();
+
+        return $user;
+    }
+
+    public function updatePasswordUsingEmail(): User
+    {
+        request()->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::where('email', request()->input('email'))->first();
+        $user->password = request()->input('password');
+        $user->save();
+
+        return $user;
+    }
 }

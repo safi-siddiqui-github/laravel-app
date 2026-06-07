@@ -14,6 +14,22 @@ Route::middleware('client_security')->group(function () {
         Route::post('login', 'login');
         Route::post('social-login', 'socialLogin');
 
+        Route::prefix('forgot-password')->group(function () {
+            Route::post('request', 'forgotPasswordRequest');
+            Route::post('verify', 'forgotPasswordVerify');
+            Route::post('resend', 'forgotPasswordResend');
+
+            Route::middleware(
+                [
+                    'auth:sanctum',
+                    'abilities:' . PersonalAccessTokenAbilityEnum::ALLOW_PASSWORD_RESET->value
+                ]
+            )
+                ->group(function () {
+                    Route::post('reset', 'forgotPasswordReset');
+                });
+        });
+
         Route::middleware('auth:sanctum')->group(function () {
 
             Route::post('logout', 'logout');

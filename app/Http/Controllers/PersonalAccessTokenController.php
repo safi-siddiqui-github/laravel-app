@@ -48,4 +48,13 @@ class PersonalAccessTokenController extends Controller
             expiresAt: now()->addMinutes(10),
         );
     }
+    
+    public function storeAllowForgotPassword(User $user): NewAccessToken
+    {
+        return $user->createToken(
+            name: $this->name(),
+            abilities: [PersonalAccessTokenAbilityEnum::ALLOW_PASSWORD_RESET->value],
+            expiresAt: now()->addMinutes(10),
+        );
+    }
 }

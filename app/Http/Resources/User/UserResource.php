@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             // 'initials' => $this->initials(),
+            'can_reset_password' => $this->can_reset_password,
         ];
     }
 }

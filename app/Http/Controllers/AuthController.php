@@ -83,10 +83,6 @@ class AuthController extends Controller
 
     public function verifyEmail(Request $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string',
-        ]);
-
         $user = $request->user();
 
         if ($user->email_verified_at) {
@@ -97,7 +93,6 @@ class AuthController extends Controller
 
         request()->mergeIfMissing([
             'user_id' => $user->id,
-            'code' => $validated['code'],
             'type' => OtpTypeEnum::EMAIL_VERIFY_OTP->value,
         ]);
         $this->otpController->verify();
@@ -166,6 +161,96 @@ class AuthController extends Controller
 
         return $this->apiResponse(
             message: 'Social Login Success',
+            data: [
+                'user' => $user->toResource(),
+                'token' => $tokenResource,
+            ]
+        );
+    }
+
+    public function forgotPasswordRequest(Request $request)
+    {
+        \App\Models\Otp::truncate();
+
+        $user = $this->userController->verifyUsingEmail();
+
+        request()->mergeIfMissing([
+            'user_id' => $user->id,
+            'type' => OtpTypeEnum::PASSWORD_RESET_OTP->value,
+        ]);
+        $this->otpController->store();
+
+        return $this->apiResponse(
+            message: 'Forgot Password Reqeust Success',
+        );
+    }
+
+    public function forgotPasswordVerify(Request $request)
+    {
+        $user = $this->userController->verifyUsingEmail();
+        $user->can_reset_password = true;
+
+        request()->mergeIfMissing([
+            'user_id' => $user->id,
+            'type' => OtpTypeEnum::PASSWORD_RESET_OTP->value,
+        ]);
+        $this->otpController->verify();
+
+        $token =  $this->personalAccessTokenController->storeAllowForgotPassword($user);
+
+        $tokenResource = new PersonalAccessTokenResource(
+            token: $token
+        );
+
+        return $this->apiResponse(
+            message: 'Forgot Password Verify Success',
+            data: [
+                'user' => $user->toResource(),
+                'token' => $tokenResource,
+            ]
+        );
+    }
+
+    public function forgotPasswordResend(Request $request)
+    {
+        $user = $this->userController->verifyUsingEmail();
+
+        request()->mergeIfMissing([
+            'user_id' => $user->id,
+            'type' => OtpTypeEnum::PASSWORD_RESET_OTP->value,
+            'email' => $user->email,
+        ]);
+
+        $otp = $this->otpController->store();
+
+        request()->mergeIfMissing([
+            'otp_id' => $otp->id,
+        ]);
+        $this->otpController->expireAll();
+
+        return $this->apiResponse(
+            message: 'Forgot Password Resend Success',
+        );
+    }
+
+    public function forgotPasswordReset(Request $request)
+    {
+        $user = request()->user();
+
+        request()->mergeIfMissing([
+            'email' => $user->email,
+        ]);
+
+        $user = $this->userController->updatePasswordUsingEmail();
+
+        $token =  $this->personalAccessTokenController->storeAllowAll($user);
+
+        $tokenResource = new PersonalAccessTokenResource(
+            token: $token
+        );
+
+        return $this->apiResponse(
+            message: 'Forgot Password Reset Success',
             data: [
                 'user' => $user->toResource(),
                 'token' => $tokenResource,
