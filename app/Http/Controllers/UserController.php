@@ -13,16 +13,6 @@ class UserController extends Controller
 {
     use ResponseTrait;
 
-    public function currentUser(Request $request)
-    {
-        return $this->apiResponse(
-            message: 'Current User',
-            data: [
-                'user' => $request->user()->toResource(),
-            ]
-        );
-    }
-
     public function slugUsingEmail(string $email): string
     {
         $username = Str::before($email, '@');

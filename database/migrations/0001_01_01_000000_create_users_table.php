@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('github_id')->nullable();
             $table->string('microsoft_id')->nullable();
             $table->string('avatar')->nullable();
+            $table->text('bio')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

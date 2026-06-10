@@ -2,6 +2,8 @@
 
 use App\Enums\PersonalAccessToken\PersonalAccessTokenAbilityEnum;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,13 +47,24 @@ Route::middleware('client_security')->group(function () {
         });
     });
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::controller(ProfileController::class)
+        ->prefix('profile')
+        ->middleware('auth:sanctum')
+        ->group(function () {
 
-        Route::controller(UserController::class)
-            ->prefix('users')
-            ->group(function () {
+            Route::get('/current', 'currentUser');
+        });
 
-                Route::get('/current', 'currentUser');
+
+    Route::controller(BlogController::class)->prefix('blog')->group(function () {
+        Route::prefix('posts')->group(function () {
+            Route::get('/', 'getPosts');
+
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::get('/get-current-user-posts', 'getCurrentUserPosts');
+                Route::post('/store', 'storePost');
+                Route::post('/delete-current-user-post', 'deleteCurrentUserPost');
             });
+        });
     });
 });
